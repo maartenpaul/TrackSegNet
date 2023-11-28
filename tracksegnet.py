@@ -30,15 +30,15 @@ if __name__ == "__main__":
 
     START_TIME = datetime.now()
 
-    PARMS_FILENAME = sys.argv[-1]
-    # PARMS_FILENAME = 'parms.csv'
+    #PARMS_FILENAME = sys.argv[-1]
+    PARMS_FILENAME = 'parms.csv'
     PARMS_DF = pd.read_csv(PARMS_FILENAME, sep='\t').set_index('parms').squeeze().to_dict()
     PARMS_DF = check_parms(PARMS_DF)
     NSTATES = PARMS_DF['num_states']
     PARMS = {
         ## Path to the trajectories to analyze:
         'data_path': Path(PARMS_DF['data_path']),
-        'track_format': 'MDF',
+        'track_format': PARMS_DF['track_format'],
 
         ## Microscope settings:
         'time_frame': PARMS_DF['time_frame'], # Time between two frames in second
@@ -65,7 +65,7 @@ if __name__ == "__main__":
         # transition probabilities
         'ptm': np.array([[PARMS_DF[f'pt_{state1}_{state2}'] for state1 in range(1, NSTATES+1)]\
                         for state2 in range(1, NSTATES+1)]),
-        'min_frames':4, # Minimal amount of frames
+        'min_frames':10, # Minimal amount of frames
         'beta':100, # Mean of exponential distribution for length tracks
 
         ## Parameters to generate the LSTM model:
@@ -84,7 +84,7 @@ if __name__ == "__main__":
         'colors': get_color_list(NSTATES),
 
         # Figure saving:
-        'fig_format': 'png',
+        'fig_format': 'pdf',
         'fig_dpi': 200,
         'fig_transparent': False,
     }
