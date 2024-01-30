@@ -192,6 +192,38 @@ def extract_1_csv(folder_name, parms):
 
     return track_df
 
+def extract_1_xslx(folder_name, parms):
+    """Extracts experimental trajectories from one XLSX file and return a pandas DataFrame containing
+    the trajectories."""
+    # Find mdf file to analyze
+    filename = 'mdf.xlsx'
+    if not os.path.isfile(folder_name/filename):
+        for filename in os.listdir(folder_name):
+            if filename.endswith(".xlsx"):
+                break
+    # Initialization
+    track_df = None
+    # coordinates of the current track:
+    current_coord = {'frame': np.array([]), 'x': np.array([]), 'y': np.array([])}
+    track_df = pd.read_excel(folder_name/filename,header=0)
+    track_df = track_df.rename(columns={"particle":"trajectory","xum":"x","yum":"y"})
+    #sort tracks by frame
+    track_df=track_df.sort_values(['trajectory', 'frame'], ascending = [True, True])
+    #add track_id column
+    track_df['track_id'] = folder_name.name + '_' + track_df['trajectory'].astype(str)
+    #correct x-y coordinates
+    track_df['x'] =     track_df['x'] / parms['pixel_size']
+    track_df['y'] =     track_df['y'] / parms['pixel_size']
+    #track_df=track_df.drop(columns=['mean_ch2', 'mean_ch3', 'area'] )
+    #remove tracks shorter than length_threshold
+    freq = track_df['track_id'].value_counts()
+    long_tracks = freq[freq >=parms['length_threshold']].index
+    track_df = track_df[track_df['track_id'].isin(long_tracks)]
+    track_df['data folder'] = str(folder_name) # PosixPath to str
+
+    return track_df
+
+
 def extract_1_trackmate_csv(folder_name, parms):
     """Extracts experimental trajectories from one Trackmate CSV file and return a pandas DataFrame containing
     the trajectories."""
@@ -228,17 +260,20 @@ def extract_all_tracks(parms):
     """Extracts the trajectories from several MDF files and return a unique pandas
     DataFrame containing the tracks from all the files."""
     num_files = len(parms['folder_names'])
-    print("\nExtraction of tracjectories from {} mdf files...".format(num_files))
+    print("\nExtraction of tracjectories from {} files...".format(num_files))
     all_track_df = []
     if parms['track_format'] == 'MDF':
         for folder_name in tqdm(parms['folder_names']):
-            all_track_df.append(extract_1_trackmate_csv(folder_name, parms))
+            all_track_df.append(extract_1_mdf(folder_name, parms))
     elif parms['track_format'] == 'CSV':
         for folder_name in tqdm(parms['folder_names']):
-            all_track_df.append(extract_1_trackmate_csv(folder_name, parms))
+            all_track_df.append(extract_1_csv(folder_name, parms))
     elif parms['track_format'] == 'TRACKMATE_CSV':
         for folder_name in tqdm(parms['folder_names']):
             all_track_df.append(extract_1_trackmate_csv(folder_name, parms))
+    elif parms['track_format'] == 'XSLX':
+        for folder_name in tqdm(parms['folder_names']):
+            all_track_df.append(extract_1_xslx(folder_name, parms))
     track_df = pd.concat(all_track_df).reset_index()
     print(f'\n{track_df.shape[0]} coordinate points')
     print(track_df.head())

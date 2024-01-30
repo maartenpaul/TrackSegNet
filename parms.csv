@@ -1,8 +1,8 @@
 parms	value
-data_path	data/toy_example
-track_format	MDF
-time_frame	0.007
-pixel_size	0.1
+data_path	/media/OIC-station2/Arti-CIFIC/16_Jan_Data
+track_format	XSLX
+time_frame	0.010
+pixel_size	1000.0
 num_states	3
 state_1_diff	0.064
 state_1_alpha	0.2
