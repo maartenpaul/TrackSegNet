@@ -17,8 +17,9 @@ def check_parms(parms_df):
     if not os.path.isdir(parms_df['data_path']):
         raise ValueError('data_path does not exist.')
 
-    if parms_df['track_format'] != 'MDF' and parms_df['track_format'] != 'CSV':
-        raise ValueError('track_format should be MDF or CSV.')
+    if parms_df['track_format'] != 'MDF' and parms_df['track_format'] != 'CSV' and parms_df['track_format'] != 'TRACKMATE_CSV' and parms_df['track_format'] != 'XSLX':
+        raise ValueError('track_format should be MDF, CSV, TRACKMATE_CSV or XSLX.')
+
 
     try:
         parms_df['time_frame'] = float(parms_df['time_frame'])

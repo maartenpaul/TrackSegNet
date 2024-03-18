@@ -19,26 +19,28 @@ import pandas as pd
 from tensorflow.keras.models import load_model
 
 # Local modules
-from tracksegnet.utils import check_parms, get_color_list
+from tracksegnet.utils import get_color_list
 from tracksegnet.simulate_tracks import run_track_simulation
-from tracksegnet.experimental_tracks import extract_all_tracks, predict_states
+from tracksegnet.experimental_tracks import predict_states
 from tracksegnet.generate_lstm_model import generate_lstm_model
 from tracksegnet.analysis import compute_ptm, make_tracklet_lists, compute_all_msd,\
     plot_scatter_alpha_diffusion, plot_proportion, plot_displ, plot_angles, plot_vac
+from src.tracksegnet.utils import check_parms
+from src.tracksegnet.experimental_tracks import extract_all_tracks
 
 if __name__ == "__main__":
 
     START_TIME = datetime.now()
 
     PARMS_FILENAME = sys.argv[-1]
-    # PARMS_FILENAME = 'parms.csv'
+    PARMS_FILENAME = 'parms.csv'
     PARMS_DF = pd.read_csv(PARMS_FILENAME, sep='\t').set_index('parms').squeeze().to_dict()
     PARMS_DF = check_parms(PARMS_DF)
     NSTATES = PARMS_DF['num_states']
     PARMS = {
         ## Path to the trajectories to analyze:
         'data_path': Path(PARMS_DF['data_path']),
-        'track_format': 'MDF',
+        'track_format': PARMS_DF['track_format'],
 
         ## Microscope settings:
         'time_frame': PARMS_DF['time_frame'], # Time between two frames in second
@@ -56,7 +58,7 @@ if __name__ == "__main__":
         } for state in range(1, NSTATES+1)],
 
         ## Restrictions on the track length:
-        'length_threshold': 14,
+        'length_threshold': 10,
 
         ## Trajectory simulation:
         'track_length_fixed': True,
